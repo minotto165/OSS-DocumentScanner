@@ -25,6 +25,7 @@ export const SETTINGS_IMAGE_EXPORT_FORMAT = 'image_export_format';
 export const SETTINGS_IMAGE_EXPORT_QUALITY = 'image_export_quality';
 export const SETTINGS_KEEP_ORIGINAL_IMAGES = 'keep_original_images';
 export const SETTINGS_TRANSFORM_BATCH_SIZE = 'transform_batch_size';
+export const SETTINGS_DEWARP_ENABLED = 'dewarp_enabled';
 export const SETTINGS_DEFAULT_TRANSFORM = 'defaultTransforms';
 export const SETTINGS_DEFAULT_COLORTYPE = 'defaultColorType';
 export const SETTINGS_DEFAULT_COLORMATRIX = 'defaultColorMatrix';

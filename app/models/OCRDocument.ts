@@ -30,6 +30,7 @@ import {
     OCR_ITERATOR_LEVEL,
     SEPARATOR,
     SETTINGS_DOCUMENT_NAME_FORMAT,
+    SETTINGS_DEWARP_ENABLED,
     getImageExportSettings,
     keepOriginalImages
 } from '../utils/constants';
@@ -595,7 +596,8 @@ export class OCRDocument extends Observable implements Document {
             saveInFolder: file.parent.path,
             fileName: file.name,
             compressFormat,
-            compressQuality: imageExportSettings.imageQuality
+            compressQuality: imageExportSettings.imageQuality,
+            dewarp: ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true)
         });
         const image = images[0];
         const croppedImagePath = page.imagePath;
@@ -645,7 +647,8 @@ export class OCRDocument extends Observable implements Document {
                 saveInFolder: file.parent.path,
                 fileName: file.name,
                 compressFormat,
-                compressQuality: imageExportSettings.imageQuality
+                compressQuality: imageExportSettings.imageQuality,
+                dewarp: ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true)
             });
             const image = images[0];
             if (image) {

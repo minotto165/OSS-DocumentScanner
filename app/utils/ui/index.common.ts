@@ -95,6 +95,7 @@ import {
     SETTINGS_DEFAULT_COLORTYPE,
     SETTINGS_DEFAULT_CONTRAST,
     SETTINGS_DEFAULT_TRANSFORM,
+    SETTINGS_DEWARP_ENABLED,
     SETTINGS_IMPORT_PDF_IMAGES,
     SETTINGS_OCR_COPY_USE_SPACE,
     SETTINGS_TRANSFORM_BATCH_SIZE,
@@ -314,7 +315,8 @@ export async function importAndScanImageOrPdfFromUris({ canGoToView = true, docu
                                                 fileName: `cropedBitmap_${index}.${compressFormat}`,
                                                 saveInFolder: knownFolders.temp().path,
                                                 compressFormat,
-                                                compressQuality: imageExportSettings.imageQuality
+                                                compressQuality: imageExportSettings.imageQuality,
+                                                dewarp: ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true)
                                             }))
                                         );
                                         // we generate
@@ -1772,7 +1774,8 @@ export async function addCurrentImageToDocument({
                 fileName,
                 autoRotate,
                 compressFormat,
-                compressQuality: imageExportSettings.imageQuality
+                compressQuality: imageExportSettings.imageQuality,
+                dewarp: ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true)
             }))
         );
     } else {
@@ -2122,7 +2125,8 @@ export async function getOCRFromCamera({ inverseUseSystemCamera = false }: { inv
                       fileName: result.fileName,
                       autoRotate: result.autoRotate,
                       compressFormat: imageExportSettings.imageFormat,
-                      compressQuality: imageExportSettings.imageQuality
+                      compressQuality: imageExportSettings.imageQuality,
+                      dewarp: ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true)
                   })
               )[0].imagePath
             : result.sourceImagePath;

@@ -75,6 +75,7 @@
         SETTINGS_START_ON_CAM,
         SETTINGS_SYNC_ON_START,
         SETTINGS_TRANSFORM_BATCH_SIZE,
+        SETTINGS_DEWARP_ENABLED,
         SETTINGS_TRASH_ENABLED,
         SETTINGS_TRASH_REMEMBERED_DELETE_MODE,
         TRANSFORM_BATCH_SIZE,
@@ -498,6 +499,13 @@
                         description: lc('transformer_batch_size_desc'),
                         type: 'slider',
                         rightValue: () => ApplicationSettings.getNumber(SETTINGS_TRANSFORM_BATCH_SIZE, TRANSFORM_BATCH_SIZE)
+                    },
+                    {
+                        type: 'switch',
+                        id: SETTINGS_DEWARP_ENABLED,
+                        title: lc('dewarp_enabled'),
+                        description: lc('dewarp_enabled_desc'),
+                        value: ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true)
                     },
                     {
                         id: 'image_processing_settings',

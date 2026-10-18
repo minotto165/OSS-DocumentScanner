@@ -520,6 +520,8 @@
     "transformations": "画像変換",
     "transformer_batch_size": "並列処理数",
     "transformer_batch_size_desc": "同時に変換処理を行う画像の数。値を大きくすると処理は速くなりますが、メモリ不足によりアプリがクラッシュする原因になります",
+    "dewarp_enabled": "ページ平坦化",
+    "dewarp_enabled_desc": "切り出し後に曲がったページをAIで平らにします。保存は遅くなりますが本のスキャンが綺麗になります",
     "trash": "ゴミ箱",
     "trash_enabled": "ゴミ箱を有効化",
     "trash_enabled_desc": "有効化すると削除されたドキュメントはゴミ箱に移動するようになり、復元できるようになります",

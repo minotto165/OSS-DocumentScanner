@@ -38,6 +38,7 @@ import {
     FOLDERS_DATA_FILENAME,
     IMG_COMPRESS,
     IMG_FORMAT,
+    SETTINGS_DEWARP_ENABLED,
     getImageExportSettings
 } from '~/utils/constants';
 import { recycleImages } from '~/utils/images';
@@ -715,7 +716,8 @@ export default class SyncWorker extends BaseWorker {
                             fileName: file.name,
                             compressFormat: IMG_FORMAT,
                             compressQuality: IMG_COMPRESS,
-                            transforms
+                            transforms,
+                            dewarp: ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true)
                         });
                         pageToUpdate.size = file.size;
                     } else if (pageToUpdate.size === 0) {

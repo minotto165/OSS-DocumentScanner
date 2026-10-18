@@ -872,7 +872,6 @@ constructor(
                         result.put("imagePath", imagePath)
                         result.put("width", finalBitmap.width)
                         result.put("height", finalBitmap.height)
-                        result.put("dewarp", dewarp && finalBitmap !== cropBitmap)
                         jsonResult.put(result)
                     } catch (e: IOException) {
                         e.printStackTrace()

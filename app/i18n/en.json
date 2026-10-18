@@ -540,6 +540,8 @@
     "transformations": "transformations",
     "transformer_batch_size": "parallel operations",
     "transformer_batch_size_desc": "number of images to transform in parallel. More is faster but could crash the app because of memory usage",
+    "dewarp_enabled": "page flattening",
+    "dewarp_enabled_desc": "neural flattening of bent or curved pages after cropping. Slower saves, better scans of books",
     "trash": "trash",
     "trash_enabled": "enable trash",
     "trash_enabled_desc": "when enabled, deleted documents are moved to trash and can be restored",
