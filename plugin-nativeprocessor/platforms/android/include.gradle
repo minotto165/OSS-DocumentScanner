@@ -64,4 +64,8 @@ dependencies {
     implementation "com.itextpdf.android:kernel-android:$itextpdfVersion"
     implementation "com.itextpdf.android:layout-android:$itextpdfVersion"
     implementation "com.itextpdf.android:bouncy-castle-adapter-android:$itextpdfVersion"
+
+    // Neural page-flattening (vFlat-style dewarp, Dewarp.kt). ONNX Runtime Mobile, CPU.
+    // Model: App_Resources/documentscanner/Android/src/main/assets/dewarp_flattener.onnx (Apache-2.0).
+    implementation "com.microsoft.onnxruntime:onnxruntime-android:1.20.0"
 }

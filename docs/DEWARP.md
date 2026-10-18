@@ -39,7 +39,7 @@ phone (CPU, background thread — the live preview stays quad-only).
 | `plugin-nativeprocessor/platforms/android/cpp/dewarp.cpp` | `grid_to_map` + `grid_sample` (border) + round quantize + white fill, 128-row blocks (~3 MB peak). Auto-built via `aux_source_directory` |
 | `.../CustomImageAnalysisCallback.kt` | `dewarp` flag in `cropDocumentFromFile` options JSON → `cropDocumentSync(..., context, dewarp)` |
 | `plugin-nativeprocessor/index.d.ts` | `CropOptions.dewarp?: boolean` (`cropDocumentFromFile` already forwards options as JSON) |
-| `App_Resources/documentscanner/Android/app.gradle` | `onnxruntime-android:1.20.0` dependency |
+| `plugin-nativeprocessor/platforms/android/include.gradle` | `onnxruntime-android:1.20.0` dependency (plugin module — Dewarp.kt compiles here) |
 
 Usage from JS:
 

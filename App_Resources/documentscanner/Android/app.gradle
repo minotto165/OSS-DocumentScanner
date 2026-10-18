@@ -191,9 +191,6 @@ dependencies {
     baselineProfile project(':baselineprofile')
 
     implementation "com.github.skydoves:colorpickerview:2.2.4"
-    // Neural page-flattening (vFlat-style dewarp). ONNX Runtime Mobile, CPU.
-    // Model: App_Resources/documentscanner/Android/src/main/assets/dewarp_flattener.onnx (Apache-2.0, Flattener bundle 1.1.0).
-    implementation "com.microsoft.onnxruntime:onnxruntime-android:1.20.0"
 }
 repositories {
       mavenCentral()
