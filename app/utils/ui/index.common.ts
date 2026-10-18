@@ -1726,8 +1726,9 @@ export async function pickFolderColor(folder, event) {
     }
 }
 
-/** Fire-and-forget neural dewarp passes. The shutter flow never waits for
- * these; saveCurrentDocument awaits them so saved pages are flattened. */
+/** Fire-and-forget processing passes (full pipeline: perspective crop +
+ * transforms + neural dewarp). The shutter flow never waits for these;
+ * saveCurrentDocument awaits them so saved pages are final. */
 const pendingDewarpTasks = new Set<Promise<void>>();
 
 export function waitForPendingDewarps() {
@@ -1776,6 +1777,63 @@ export async function addCurrentImageToDocument({
     if (quads) {
         const compressFormat = sourceImagePath.toLowerCase().endsWith('.png') ? 'png' : imageExportSettings.imageFormat;
 
+        if (!CARD_APP) {
+            // Instant shutter: push the page with the source image now, run
+            // the full pipeline (perspective crop + transforms + dewarp)
+            // behind it and swap the entry in place. saveCurrentDocument
+            // awaits the swap, so saved pages are always final.
+            const pageEntry = {
+                imagePath: sourceImagePath,
+                width: imageWidth,
+                height: imageHeight,
+                crop: quads[0] || [
+                    [0, 0],
+                    [imageWidth - 0, 0],
+                    [imageWidth - 0, imageHeight - 0],
+                    [0, imageHeight - 0]
+                ],
+                transforms,
+                colorMatrix,
+                colorType,
+                contrast,
+                brightness,
+                sourceImagePath,
+                sourceImageWidth: imageWidth,
+                sourceImageHeight: imageHeight,
+                sourceImageRotation: imageRotation,
+                rotation: 0 // cropped image is always rotated
+            };
+            pagesToAdd.push(pageEntry);
+            const bgFileName = fileName || `cropedBitmap_${Date.now()}.${compressFormat}`;
+            const task = cropDocumentFromFile(sourceImagePath, quads, {
+                transforms,
+                saveInFolder: knownFolders.temp().path,
+                fileName: bgFileName,
+                autoRotate,
+                compressFormat,
+                compressQuality: imageExportSettings.imageQuality,
+                dewarp: dewarpEnabled
+            })
+                .then((results) => {
+                    const r = results?.[0];
+                    if (r?.imagePath) {
+                        pageEntry.imagePath = r.imagePath;
+                        pageEntry.width = r.width;
+                        pageEntry.height = r.height;
+                        DEV_LOG && console.log('background processing done', bgFileName);
+                    }
+                })
+                .catch((err) => {
+                    DEV_LOG && console.warn('background processing failed, keeping source image', err);
+                })
+                .finally(() => {
+                    pendingDewarpTasks.delete(task);
+                });
+            pendingDewarpTasks.add(task);
+            DEV_LOG && console.log('addCurrentImageToDocument done (placeholder)', sourceImagePath, Date.now() - start, 'ms');
+            return;
+        }
+
         images.push(
             ...(await cropDocumentFromFile(sourceImagePath, quads, {
                 transforms,
@@ -1784,34 +1842,9 @@ export async function addCurrentImageToDocument({
                 autoRotate,
                 compressFormat,
                 compressQuality: imageExportSettings.imageQuality,
-                // Fast perspective crop first so the shutter stays snappy.
-                dewarp: false
+                dewarp: dewarpEnabled
             }))
         );
-        if (dewarpEnabled) {
-            // Neural flattening runs behind the shutter and overwrites the
-            // same temp file. saveCurrentDocument awaits it (see
-            // waitForPendingDewarps), so saved pages are flattened.
-            const task = cropDocumentFromFile(sourceImagePath, quads, {
-                transforms,
-                saveInFolder: knownFolders.temp().path,
-                fileName,
-                autoRotate,
-                compressFormat,
-                compressQuality: imageExportSettings.imageQuality,
-                dewarp: true
-            })
-                .then(() => {
-                    DEV_LOG && console.log('background dewarp done', fileName);
-                })
-                .catch((err) => {
-                    DEV_LOG && console.warn('background dewarp failed, keeping perspective crop', err);
-                })
-                .finally(() => {
-                    pendingDewarpTasks.delete(task);
-                });
-            pendingDewarpTasks.add(task);
-        }
     } else {
         images.push({ imagePath: sourceImagePath, width: imageWidth, height: imageHeight });
     }
