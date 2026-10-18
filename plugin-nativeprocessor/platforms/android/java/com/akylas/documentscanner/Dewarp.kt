@@ -87,17 +87,23 @@ object Dewarp {
                 val tensor = OnnxTensor.createTensor(
                     OrtEnvironment.getEnvironment(), buf, longArrayOf(1, 3, IN_H.toLong(), IN_W.toLong())
                 )
-                tensor.use {
+                // NOTE: kotlin.io.use needs java.io.Closeable; ORT types are
+                // AutoCloseable only, so close explicitly with try-finally.
+                try {
                     val t0 = System.currentTimeMillis()
-                    val out = session.run(mapOf(inputName to it))
-                    out.use {
+                    val out = session.run(mapOf(inputName to tensor))
+                    try {
                         @Suppress("UNCHECKED_CAST")
                         val g = ((out[0].value as Array<*>)[0] as Array<*>) // (2, GH, GW)
                         val ch0 = g[0] as Array<FloatArray>
                         val ch1 = g[1] as Array<FloatArray>
                         Log.i(TAG, "dewarp infer ${System.currentTimeMillis() - t0} ms")
                         Pair(ch0, ch1)
+                    } finally {
+                        out.close()
                     }
+                } finally {
+                    tensor.close()
                 }
             }
             val grid = mergeTta(grids[0], grids[1])
