@@ -71,6 +71,8 @@ export interface CropOptions extends LoadImageOptions {
     fileName?: string;
     compressFormat?: string;
     compressQuality?: number;
+    /** Neural page-flattening (Flattener dewarp.onnx) after the perspective crop. Defaults to false. */
+    dewarp?: boolean;
 }
 export interface CornersOptions extends LoadImageOptions {
     imageRotation?: number;

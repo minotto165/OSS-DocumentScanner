@@ -806,6 +806,8 @@ constructor(
             fileName: String?,
             compressFormat: String = "jpg",
             compressQuality: Int = 100,
+            context: Context? = null,
+            dewarp: Boolean = false,
         ): Any? {
             // val start = System.currentTimeMillis()
             val bitmaps = arrayListOf<Bitmap>()
@@ -841,12 +843,26 @@ constructor(
                     transforms,
                     cropBitmap
                 )
+                // Neural page-flattening (vFlat-style) on the perspective crop.
+                // Dewarp is a quality stage: on any failure the crop is kept.
+                var finalBitmap = cropBitmap
+                if (dewarp && context != null) {
+                    try {
+                        val flat = Dewarp.dewarpBitmap(context, cropBitmap)
+                        if (flat !== cropBitmap) {
+                            cropBitmap.recycle()
+                            finalBitmap = flat
+                        }
+                    } catch (e: Exception) {
+                        // keep cropBitmap
+                    }
+                }
                 if (saveInFolder != null) {
                     try {
 
                         var imagePath = "$saveInFolder/${fileName ?: "cropedBitmap_$index.$compressFormat"}"
                         FileOutputStream(imagePath).use { out ->
-                            cropBitmap.compress(
+                            finalBitmap.compress(
                                 ImageUtil.getTargetFormat(compressFormat),
                                 compressQuality,
                                 out
@@ -854,15 +870,16 @@ constructor(
                         }
                         var result = JSONObject()
                         result.put("imagePath", imagePath)
-                        result.put("width", cropWidth)
-                        result.put("height", cropHeight)
+                        result.put("width", finalBitmap.width)
+                        result.put("height", finalBitmap.height)
+                        result.put("dewarp", dewarp && finalBitmap !== cropBitmap)
                         jsonResult.put(result)
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
-                    cropBitmap.recycle()
+                    finalBitmap.recycle()
                 } else {
-                    bitmaps.add(cropBitmap)
+                    bitmaps.add(finalBitmap)
                 }
             }
             // Log.d("ImageAnalysis", "cropDocumentSync in ${System.currentTimeMillis() - start} ms")
@@ -908,6 +925,7 @@ constructor(
                     var fileName: String? = null
                     var compressFormat = "jpg"
                     var compressQuality = 100
+                    var dewarp = false
                     if (options != null) {
                         try {
                             var jsOptions = JSONObject(options)
@@ -917,6 +935,7 @@ constructor(
                             fileName = jsOptions.optString("fileName", fileName)
                             compressFormat = jsOptions.optString("compressFormat", compressFormat)
                             compressQuality = jsOptions.optInt("compressQuality", compressQuality)
+                            dewarp = jsOptions.optBoolean("dewarp", dewarp)
                         } catch (ignored: JSONException) {
                         }
                     }
@@ -925,7 +944,7 @@ constructor(
                         callback.onResult(ImageUtil.ImageNotFoundException(src), null)
                         return@thread
                     }
-                    callback.onResult(null, cropDocumentSync(bitmap, quads, transforms, saveInFolder, fileName, compressFormat,compressQuality ))
+                    callback.onResult(null, cropDocumentSync(bitmap, quads, transforms, saveInFolder, fileName, compressFormat, compressQuality, context, dewarp))
                 } catch (e: Exception) {
                     callback.onResult(e, null)
                 } finally {
