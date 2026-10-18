@@ -47,13 +47,26 @@ Usage from JS:
 await cropDocumentFromFile(src, quads, { saveInFolder, dewarp: true });
 ```
 
-## Limits (v1)
+## Shutter flow (two-stage, never blocks shooting)
+
+1. `addCurrentImageToDocument` awaits a fast perspective-only crop and
+   pushes the page immediately — the shutter stays snappy.
+2. When the toggle is ON, a fire-and-forget pass re-crops with
+   `dewarp: true` into the **same temp file** (sizes are identical).
+3. `saveCurrentDocument` (Camera.svelte) awaits `waitForPendingDewarps()`
+   first, so saved documents always contain the flattened image.
+   A failed background pass just keeps the perspective crop.
+
+Limits: batch thumbnails show the fast crop until save; OCR flows
+await the dewarp pass directly (they need the final image).
+
+## Other limits (v1)
 
 - CPU only (no NNAPI/GPU delegate yet — deterministic first).
 - No page re-crop / rerun passes (Flattener's full pipeline adds those for
   heavy crumple; here the OSS quad detector is the locate stage).
 - Landscape spreads run as-is (model is portrait-trained; accuracy lower).
-- `cropDocument` (live preview path) has no `dewarp` param — file path only.
+- Upstream PR: never (owner instruction) — fork-only work.
 
 ## Verification done
 

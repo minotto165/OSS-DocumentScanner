@@ -1726,6 +1726,14 @@ export async function pickFolderColor(folder, event) {
     }
 }
 
+/** Fire-and-forget neural dewarp passes. The shutter flow never waits for
+ * these; saveCurrentDocument awaits them so saved pages are flattened. */
+const pendingDewarpTasks = new Set<Promise<void>>();
+
+export function waitForPendingDewarps() {
+    return Promise.allSettled([...pendingDewarpTasks]);
+}
+
 export async function addCurrentImageToDocument({
     autoRotate,
     fileName,
@@ -1764,6 +1772,7 @@ export async function addCurrentImageToDocument({
     DEV_LOG && console.log('addCurrentImageToDocument', sourceImagePath, quads);
     const images: CropResult[] = [];
     const imageExportSettings = getImageExportSettings();
+    const dewarpEnabled = ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true);
     if (quads) {
         const compressFormat = sourceImagePath.toLowerCase().endsWith('.png') ? 'png' : imageExportSettings.imageFormat;
 
@@ -1775,9 +1784,34 @@ export async function addCurrentImageToDocument({
                 autoRotate,
                 compressFormat,
                 compressQuality: imageExportSettings.imageQuality,
-                dewarp: ApplicationSettings.getBoolean(SETTINGS_DEWARP_ENABLED, true)
+                // Fast perspective crop first so the shutter stays snappy.
+                dewarp: false
             }))
         );
+        if (dewarpEnabled) {
+            // Neural flattening runs behind the shutter and overwrites the
+            // same temp file. saveCurrentDocument awaits it (see
+            // waitForPendingDewarps), so saved pages are flattened.
+            const task = cropDocumentFromFile(sourceImagePath, quads, {
+                transforms,
+                saveInFolder: knownFolders.temp().path,
+                fileName,
+                autoRotate,
+                compressFormat,
+                compressQuality: imageExportSettings.imageQuality,
+                dewarp: true
+            })
+                .then(() => {
+                    DEV_LOG && console.log('background dewarp done', fileName);
+                })
+                .catch((err) => {
+                    DEV_LOG && console.warn('background dewarp failed, keeping perspective crop', err);
+                })
+                .finally(() => {
+                    pendingDewarpTasks.delete(task);
+                });
+            pendingDewarpTasks.add(task);
+        }
     } else {
         images.push({ imagePath: sourceImagePath, width: imageWidth, height: imageHeight });
     }

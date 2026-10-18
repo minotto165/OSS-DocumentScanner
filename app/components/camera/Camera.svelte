@@ -39,7 +39,7 @@
     } from '~/utils/constants';
     import { ZOOM_SLIDER_STEPS, clampZoom, percentToZoom, zoomToPercent } from '~/utils/cameraZoom';
     import { recycleImages } from '~/utils/images';
-    import { confirmGoBack, goToDocumentAfterScan, hideLoading, onBackButton, processCameraImage, requestCameraPermission, showLoading, showSettings } from '~/utils/ui';
+    import { confirmGoBack, goToDocumentAfterScan, hideLoading, onBackButton, processCameraImage, requestCameraPermission, showLoading, showSettings, waitForPendingDewarps } from '~/utils/ui';
     import { checkAvailableStorage } from '~/utils/utils';
     import { colors, shouldListenForSensorOrientation, startOnCam, windowInset } from '~/variables';
 </script>
@@ -380,6 +380,9 @@
         const newDocument = !theDocument;
         try {
             DEV_LOG && console.log('saveCurrentDocument', newDocument, !!theDocument);
+            // Background neural dewarp passes finish here so saved pages are
+            // flattened. Shooting itself never waits for them.
+            await waitForPendingDewarps();
             if (!theDocument) {
                 theDocument = document = await OCRDocument.createDocument(pagesToAdd, folder);
                 DEV_LOG && console.log('saveCurrentDocument document created', newDocument, !!theDocument);
