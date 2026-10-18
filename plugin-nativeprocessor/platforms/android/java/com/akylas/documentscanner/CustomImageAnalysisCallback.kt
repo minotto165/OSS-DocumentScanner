@@ -925,7 +925,9 @@ constructor(
                     var fileName: String? = null
                     var compressFormat = "jpg"
                     var compressQuality = 100
-                    var dewarp = false
+                    // TEST BUILD: dewarp defaults ON so every file save runs
+                    // neural flattening. Final form should be a settings toggle.
+                    var dewarp = true
                     if (options != null) {
                         try {
                             var jsOptions = JSONObject(options)
